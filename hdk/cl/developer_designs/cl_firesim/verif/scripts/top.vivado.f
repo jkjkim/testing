@@ -77,6 +77,7 @@ ${CL_ROOT}/ip/axi_clock_converter_dramslim/sim/axi_clock_converter_dramslim.v
 ${CL_ROOT}/ip/axi_clock_converter_oclnew/sim/axi_clock_converter_oclnew.v
 ${CL_ROOT}/ip/axi_clock_converter_oclnew/hdl/axi_clock_converter_v2_1_vl_rfs.v
 ${CL_ROOT}/ip/axi_clock_converter_512_wide/sim/axi_clock_converter_512_wide.v
+${CL_ROOT}/ip/axi_clock_converter_512_pcim/sim/axi_clock_converter_512_pcim.v
 ${CL_ROOT}/ip/axi_dwidth_converter_0/sim/axi_dwidth_converter_0.v
 ${CL_ROOT}/ip/axi_dwidth_converter_0/hdl/axi_dwidth_converter_v2_1_vl_rfs.v
 ${CL_ROOT}/ip/axi_dwidth_converter_0/hdl/axi_register_slice_v2_1_vl_rfs.v
