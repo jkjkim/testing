@@ -40,7 +40,7 @@ logic rst_extra1_n_sync;
 
 `include "unused_flr_template.inc"
 //`include "unused_ddr_a_b_d_template.inc"
-`include "unused_pcim_template.inc"
+//`include "unused_pcim_template.inc"
 `include "unused_cl_sda_template.inc"
 `include "unused_sh_bar1_template.inc"
 `include "unused_apppf_irq_template.inc"
