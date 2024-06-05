@@ -40,7 +40,7 @@ logic rst_extra1_n_sync;
 
 `include "unused_flr_template.inc"
 //`include "unused_ddr_a_b_d_template.inc"
-`include "unused_pcim_template.inc"
+//`include "unused_pcim_template.inc"
 `include "unused_cl_sda_template.inc"
 `include "unused_sh_bar1_template.inc"
 `include "unused_apppf_irq_template.inc"
@@ -377,8 +377,147 @@ axi_clock_converter_512_wide wide_pcis_clock_convert (
 );
 
 
+//-------------------------------------------------
+// PCIe DMA_PCIM to FireSim
+//-------------------------------------------------
+
+   logic [15:0] cl_sh_pcim_awid_FIRESIM;
+   logic [63:0] cl_sh_pcim_awaddr_FIRESIM;
+   logic [7:0] cl_sh_pcim_awlen_FIRESIM;
+   logic [2:0] cl_sh_pcim_awsize_FIRESIM;
+   // logic [18:0] cl_sh_pcim_awuser_FIRESIM;                             //RESERVED (not used)
+   logic cl_sh_pcim_awvalid_FIRESIM;
+   logic sh_cl_pcim_awready_FIRESIM;
+
+   logic[511:0] cl_sh_pcim_wdata_FIRESIM;
+   logic[63:0] cl_sh_pcim_wstrb_FIRESIM;
+   logic cl_sh_pcim_wlast_FIRESIM;
+   logic cl_sh_pcim_wvalid_FIRESIM;
+   logic sh_cl_pcim_wready_FIRESIM;
+
+   logic[15:0] sh_cl_pcim_bid_FIRESIM;
+   logic[1:0] sh_cl_pcim_bresp_FIRESIM;
+   logic sh_cl_pcim_bvalid_FIRESIM;
+   logic cl_sh_pcim_bready_FIRESIM;
+
+   logic[15:0] cl_sh_pcim_arid_FIRESIM;		                           //Note max 32 outstanding txns are supported_FIRESIM; width is larger to allow bits for AXI fabrics
+   logic[63:0] cl_sh_pcim_araddr_FIRESIM;
+   logic[7:0] cl_sh_pcim_arlen_FIRESIM;
+   logic[2:0] cl_sh_pcim_arsize_FIRESIM;
+   // logic[18:0] cl_sh_pcim_aruser_FIRESIM;                             // RESERVED (not used)
+   logic cl_sh_pcim_arvalid_FIRESIM;
+   logic sh_cl_pcim_arready_FIRESIM;
+
+   logic[15:0] sh_cl_pcim_rid_FIRESIM;
+   logic[511:0] sh_cl_pcim_rdata_FIRESIM;
+   logic[1:0] sh_cl_pcim_rresp_FIRESIM;
+   logic sh_cl_pcim_rlast_FIRESIM;
+   logic sh_cl_pcim_rvalid_FIRESIM;
+   logic cl_sh_pcim_rready_FIRESIM;
+
+   axi_clock_converter_512_wide wide_pcim_clock_convert (
+      .s_axi_aclk(firesim_internal_clock),          // input wire s_axi_aclk
+      .s_axi_aresetn(rst_firesim_n_sync),    // input wire s_axi_aresetn
+
+      .s_axi_awid(cl_sh_pcim_awid_FIRESIM),          // input wire [5 : 0] s_axi_awid
+      .s_axi_awaddr(cl_sh_pcim_awaddr_FIRESIM),      // input wire [63 : 0] s_axi_awaddr
+      .s_axi_awlen(cl_sh_pcim_awlen_FIRESIM),        // input wire [7 : 0] s_axi_awlen
+      .s_axi_awsize(cl_sh_pcim_awsize_FIRESIM),      // input wire [2 : 0] s_axi_awsize
+      .s_axi_awburst(2'b1),    // input wire [1 : 0] s_axi_awburst
+      .s_axi_awlock(1'b0),      // input wire [0 : 0] s_axi_awlock
+      // CACHE = xx1x indicates the transcation is modifiable and
+      // that the converter should pack narrow reads into wider ones
+      .s_axi_awcache(4'h2),    // input wire [3 : 0] s_axi_awcache
+         .s_axi_awprot(3'b0),      // input wire [2 : 0] s_axi_awprot
+         .s_axi_awregion(4'b0),  // input wire [3 : 0] s_axi_awregion
+         .s_axi_awqos(4'b0),        // input wire [3 : 0] s_axi_awqos
+         .s_axi_awvalid(cl_sh_pcim_awvalid_FIRESIM),    // input wire s_axi_awvalid
+         .s_axi_awready(sh_cl_pcim_awready_FIRESIM),    // output wire s_axi_awready
+
+         .s_axi_wdata(cl_sh_pcim_wdata_FIRESIM),        // input wire [511 : 0] s_axi_wdata
+         .s_axi_wstrb(cl_sh_pcim_wstrb_FIRESIM),        // input wire [63 : 0] s_axi_wstrb
+         .s_axi_wlast(cl_sh_pcim_wlast_FIRESIM),        // input wire s_axi_wlast
+         .s_axi_wvalid(cl_sh_pcim_wvalid_FIRESIM),      // input wire s_axi_wvalid
+         .s_axi_wready(sh_cl_pcim_wready_FIRESIM),      // output wire s_axi_wready
+
+         .s_axi_bid(sh_cl_pcim_bid_FIRESIM),            // output wire [5 : 0] s_axi_bid
+         .s_axi_bresp(sh_cl_pcim_bresp_FIRESIM),        // output wire [1 : 0] s_axi_bresp
+         .s_axi_bvalid(sh_cl_pcim_bvalid_FIRESIM),      // output wire s_axi_bvalid
+         .s_axi_bready(cl_sh_pcim_bready_FIRESIM),      // input wire s_axi_bready
+
+         .s_axi_arid(cl_sh_pcim_arid_FIRESIM),          // input wire [5 : 0] s_axi_arid
+         .s_axi_araddr(cl_sh_pcim_araddr_FIRESIM),      // input wire [63 : 0] s_axi_araddr
+         .s_axi_arlen(cl_sh_pcim_arlen_FIRESIM),        // input wire [7 : 0] s_axi_arlen
+         .s_axi_arsize(cl_sh_pcim_arsize_FIRESIM),      // input wire [2 : 0] s_axi_arsize
+         .s_axi_arburst(2'b1),    // input wire [1 : 0] s_axi_arburst
+         .s_axi_arlock(1'b0),      // input wire [0 : 0] s_axi_arlock
+         // CACHE = xx1x indicates the transcation is modifiable and
+         // that the converter should pack narrow reads into wider ones
+         .s_axi_arcache(4'h2),    // input wire [3 : 0] s_axi_arcache
+            .s_axi_arprot(3'b0),      // input wire [2 : 0] s_axi_arprot
+            .s_axi_arregion(4'b0),  // input wire [3 : 0] s_axi_arregion
+            .s_axi_arqos(4'b0),        // input wire [3 : 0] s_axi_arqos
+            .s_axi_arvalid(cl_sh_pcim_arvalid_FIRESIM),    // input wire s_axi_arvalid
+            .s_axi_arready(sh_cl_pcim_arready_FIRESIM),    // output wire s_axi_arready
+
+            .s_axi_rid(sh_cl_pcim_rid_FIRESIM),            // output wire [5 : 0] s_axi_rid
+            .s_axi_rdata(sh_cl_pcim_rdata_FIRESIM),        // output wire [511 : 0] s_axi_rdata
+            .s_axi_rresp(sh_cl_pcim_rresp_FIRESIM),        // output wire [1 : 0] s_axi_rresp
+            .s_axi_rlast(sh_cl_pcim_rlast_FIRESIM),        // output wire s_axi_rlast
+            .s_axi_rvalid(sh_cl_pcim_rvalid_FIRESIM),      // output wire s_axi_rvalid
+            .s_axi_rready(cl_sh_pcim_rready_FIRESIM),      // input wire s_axi_rready
 
 
+            .m_axi_aclk(clk_main_a0),          // input wire m_axi_aclk
+            .m_axi_aresetn(rst_main_n_sync),    // input wire m_axi_aresetn
+
+            .m_axi_awid(cl_sh_pcim_awid),          // output wire [5 : 0] m_axi_awid
+            .m_axi_awaddr(cl_sh_pcim_awaddr),      // output wire [63 : 0] m_axi_awaddr
+            .m_axi_awlen(cl_sh_pcim_awlen),        // output wire [7 : 0] m_axi_awlen
+            .m_axi_awsize(cl_sh_pcim_awsize),      // output wire [2 : 0] m_axi_awsize
+            .m_axi_awburst(),    // output wire [1 : 0] m_axi_awburst
+            .m_axi_awlock(),      // output wire [0 : 0] m_axi_awlock
+            .m_axi_awcache(),    // output wire [3 : 0] m_axi_awcache
+            .m_axi_awprot(),      // output wire [2 : 0] m_axi_awprot
+            .m_axi_awregion(),  // output wire [3 : 0] m_axi_awregion
+            .m_axi_awqos(),        // output wire [3 : 0] m_axi_awqos
+            .m_axi_awvalid(cl_sh_pcim_awvalid),    // output wire m_axi_awvalid
+            .m_axi_awready(sh_cl_pcim_awready),    // input wire m_axi_awready
+
+            .m_axi_wdata(cl_sh_pcim_wdata),        // output wire [511 : 0] m_axi_wdata
+            .m_axi_wstrb(cl_sh_pcim_wstrb),        // output wire [63 : 0] m_axi_wstrb
+            .m_axi_wlast(cl_sh_pcim_wlast),        // output wire m_axi_wlast
+            .m_axi_wvalid(cl_sh_pcim_wvalid),      // output wire m_axi_wvalid
+            .m_axi_wready(sh_cl_pcim_wready),      // input wire m_axi_wready
+
+            .m_axi_bid(sh_cl_pcim_bid),            // input wire [5 : 0] m_axi_bid
+            .m_axi_bresp(sh_cl_pcim_bresp),        // input wire [1 : 0] m_axi_bresp
+            .m_axi_bvalid(sh_cl_pcim_bvalid),      // input wire m_axi_bvalid
+            .m_axi_bready(cl_sh_pcim_bready),      // output wire m_axi_bready
+
+            .m_axi_arid(cl_sh_pcim_arid),          // output wire [5 : 0] m_axi_arid
+            .m_axi_araddr(cl_sh_pcim_araddr),      // output wire [63 : 0] m_axi_araddr
+            .m_axi_arlen(cl_sh_pcim_arlen),        // output wire [7 : 0] m_axi_arlen
+            .m_axi_arsize(cl_sh_pcim_arsize),      // output wire [2 : 0] m_axi_arsize
+            .m_axi_arburst(),    // output wire [1 : 0] m_axi_arburst
+            .m_axi_arlock(),      // output wire [0 : 0] m_axi_arlock
+            .m_axi_arcache(),    // output wire [3 : 0] m_axi_arcache
+            .m_axi_arprot(),      // output wire [2 : 0] m_axi_arprot
+            .m_axi_arregion(),  // output wire [3 : 0] m_axi_arregion
+            .m_axi_arqos(),        // output wire [3 : 0] m_axi_arqos
+            .m_axi_arvalid(cl_sh_pcim_arvalid),    // output wire m_axi_arvalid
+            .m_axi_arready(sh_cl_pcim_arready),    // input wire m_axi_arready
+
+            .m_axi_rid(sh_cl_pcim_rid),            // input wire [5 : 0] m_axi_rid
+            .m_axi_rdata(sh_cl_pcim_rdata),        // input wire [511 : 0] m_axi_rdata
+            .m_axi_rresp(sh_cl_pcim_rresp),        // input wire [1 : 0] m_axi_rresp
+            .m_axi_rlast(sh_cl_pcim_rlast),        // input wire m_axi_rlast
+            .m_axi_rvalid(sh_cl_pcim_rvalid),      // input wire m_axi_rvalid
+            .m_axi_rready(cl_sh_pcim_rready)      // output wire m_axi_rready
+         );
+
+assign cl_sh_pcim_awuser = 18'h0;
+assign cl_sh_pcim_aruser = 18'h0;
 
 //----------------------------------------- 
 // DDR controller instantiation   
@@ -1070,51 +1209,97 @@ wire fsimtop_s_3_axi_rready;
    .io_master_r_bits_user(),    // UNUSED at top level
 
     // special NIC master interface
-   .io_dma_aw_ready(cl_sh_dma_pcis_awready_FIRESIM),
-   .io_dma_aw_valid(sh_cl_dma_pcis_awvalid_FIRESIM),
-   .io_dma_aw_bits_addr(sh_cl_dma_pcis_awaddr_FIRESIM),
-   .io_dma_aw_bits_len(sh_cl_dma_pcis_awlen_FIRESIM),
-   .io_dma_aw_bits_size(sh_cl_dma_pcis_awsize_FIRESIM),
-   .io_dma_aw_bits_burst(2'h1),
-   .io_dma_aw_bits_lock(1'h0),
-   .io_dma_aw_bits_cache(4'h0),
-   .io_dma_aw_bits_prot(3'h0), //unused? (could connect?)
-   .io_dma_aw_bits_qos(4'h0),
-   .io_dma_aw_bits_region(4'h0),
-   .io_dma_aw_bits_id(sh_cl_dma_pcis_awid_FIRESIM),
-   .io_dma_aw_bits_user(1'h0),
-   .io_dma_w_ready(cl_sh_dma_pcis_wready_FIRESIM),
-   .io_dma_w_valid(sh_cl_dma_pcis_wvalid_FIRESIM),
-   .io_dma_w_bits_data(sh_cl_dma_pcis_wdata_FIRESIM),
-   .io_dma_w_bits_last(sh_cl_dma_pcis_wlast_FIRESIM),
-   .io_dma_w_bits_id(6'h0),
-   .io_dma_w_bits_strb(sh_cl_dma_pcis_wstrb_FIRESIM),
-   .io_dma_w_bits_user(1'h0),
-   .io_dma_b_ready(sh_cl_dma_pcis_bready_FIRESIM),
-   .io_dma_b_valid(cl_sh_dma_pcis_bvalid_FIRESIM),
-   .io_dma_b_bits_resp(cl_sh_dma_pcis_bresp_FIRESIM),
-   .io_dma_b_bits_id(cl_sh_dma_pcis_bid_FIRESIM),
-   .io_dma_b_bits_user(),    // UNUSED at top level
-   .io_dma_ar_ready(cl_sh_dma_pcis_arready_FIRESIM),
-   .io_dma_ar_valid(sh_cl_dma_pcis_arvalid_FIRESIM),
-   .io_dma_ar_bits_addr(sh_cl_dma_pcis_araddr_FIRESIM),
-   .io_dma_ar_bits_len(sh_cl_dma_pcis_arlen_FIRESIM),
-   .io_dma_ar_bits_size(sh_cl_dma_pcis_arsize_FIRESIM),
-   .io_dma_ar_bits_burst(2'h1),
-   .io_dma_ar_bits_lock(1'h0),
-   .io_dma_ar_bits_cache(4'h0),
-   .io_dma_ar_bits_prot(3'h0),
-   .io_dma_ar_bits_qos(4'h0),
-   .io_dma_ar_bits_region(4'h0),
-   .io_dma_ar_bits_id(sh_cl_dma_pcis_arid_FIRESIM),
-   .io_dma_ar_bits_user(1'h0),
-   .io_dma_r_ready(sh_cl_dma_pcis_rready_FIRESIM),
-   .io_dma_r_valid(cl_sh_dma_pcis_rvalid_FIRESIM),
-   .io_dma_r_bits_resp(cl_sh_dma_pcis_rresp_FIRESIM),
-   .io_dma_r_bits_data(cl_sh_dma_pcis_rdata_FIRESIM),
-   .io_dma_r_bits_last(cl_sh_dma_pcis_rlast_FIRESIM),
-   .io_dma_r_bits_id(cl_sh_dma_pcis_rid_FIRESIM),
-   .io_dma_r_bits_user(),    // UNUSED at top level
+   .io_pcis_aw_ready(cl_sh_dma_pcis_awready_FIRESIM),
+   .io_pcis_aw_valid(sh_cl_dma_pcis_awvalid_FIRESIM),
+   .io_pcis_aw_bits_addr(sh_cl_dma_pcis_awaddr_FIRESIM),
+   .io_pcis_aw_bits_len(sh_cl_dma_pcis_awlen_FIRESIM),
+   .io_pcis_aw_bits_size(sh_cl_dma_pcis_awsize_FIRESIM),
+   .io_pcis_aw_bits_burst(2'h1),
+   .io_pcis_aw_bits_lock(1'h0),
+   .io_pcis_aw_bits_cache(4'h0),
+   .io_pcis_aw_bits_prot(3'h0), //unused? (could connect?)
+   .io_pcis_aw_bits_qos(4'h0),
+   .io_pcis_aw_bits_region(4'h0),
+   .io_pcis_aw_bits_id(sh_cl_dma_pcis_awid_FIRESIM),
+   .io_pcis_aw_bits_user(1'h0),
+   .io_pcis_w_ready(cl_sh_dma_pcis_wready_FIRESIM),
+   .io_pcis_w_valid(sh_cl_dma_pcis_wvalid_FIRESIM),
+   .io_pcis_w_bits_data(sh_cl_dma_pcis_wdata_FIRESIM),
+   .io_pcis_w_bits_last(sh_cl_dma_pcis_wlast_FIRESIM),
+   .io_pcis_w_bits_id(6'h0),
+   .io_pcis_w_bits_strb(sh_cl_dma_pcis_wstrb_FIRESIM),
+   .io_pcis_w_bits_user(1'h0),
+   .io_pcis_b_ready(sh_cl_dma_pcis_bready_FIRESIM),
+   .io_pcis_b_valid(cl_sh_dma_pcis_bvalid_FIRESIM),
+   .io_pcis_b_bits_resp(cl_sh_dma_pcis_bresp_FIRESIM),
+   .io_pcis_b_bits_id(cl_sh_dma_pcis_bid_FIRESIM),
+   .io_pcis_b_bits_user(),    // UNUSED at top level
+   .io_pcis_ar_ready(cl_sh_dma_pcis_arready_FIRESIM),
+   .io_pcis_ar_valid(sh_cl_dma_pcis_arvalid_FIRESIM),
+   .io_pcis_ar_bits_addr(sh_cl_dma_pcis_araddr_FIRESIM),
+   .io_pcis_ar_bits_len(sh_cl_dma_pcis_arlen_FIRESIM),
+   .io_pcis_ar_bits_size(sh_cl_dma_pcis_arsize_FIRESIM),
+   .io_pcis_ar_bits_burst(2'h1),
+   .io_pcis_ar_bits_lock(1'h0),
+   .io_pcis_ar_bits_cache(4'h0),
+   .io_pcis_ar_bits_prot(3'h0),
+   .io_pcis_ar_bits_qos(4'h0),
+   .io_pcis_ar_bits_region(4'h0),
+   .io_pcis_ar_bits_id(sh_cl_dma_pcis_arid_FIRESIM),
+   .io_pcis_ar_bits_user(1'h0),
+   .io_pcis_r_ready(sh_cl_dma_pcis_rready_FIRESIM),
+   .io_pcis_r_valid(cl_sh_dma_pcis_rvalid_FIRESIM),
+   .io_pcis_r_bits_resp(cl_sh_dma_pcis_rresp_FIRESIM),
+   .io_pcis_r_bits_data(cl_sh_dma_pcis_rdata_FIRESIM),
+   .io_pcis_r_bits_last(cl_sh_dma_pcis_rlast_FIRESIM),
+   .io_pcis_r_bits_id(cl_sh_dma_pcis_rid_FIRESIM),
+   .io_pcis_r_bits_user(),    // UNUSED at top level
+
+   .io_pcim_aw_ready(sh_cl_pcim_awready_FIRESIM),
+   .io_pcim_aw_valid(cl_sh_pcim_awvalid_FIRESIM),
+   .io_pcim_aw_bits_addr(cl_sh_pcim_awaddr_FIRESIM),
+   .io_pcim_aw_bits_len(cl_sh_pcim_awlen_FIRESIM),
+   .io_pcim_aw_bits_size(cl_sh_pcim_awsize_FIRESIM),
+   .io_pcim_aw_bits_burst(),
+   .io_pcim_aw_bits_lock(),
+   .io_pcim_aw_bits_cache(),
+   .io_pcim_aw_bits_prot(),
+   .io_pcim_aw_bits_qos(),
+   .io_pcim_aw_bits_region(),
+   .io_pcim_aw_bits_id(cl_sh_pcim_awid_FIRESIM),
+   .io_pcim_aw_bits_user(),
+   .io_pcim_w_ready(sh_cl_pcim_wready_FIRESIM),
+   .io_pcim_w_valid(cl_sh_pcim_wvalid_FIRESIM),
+   .io_pcim_w_bits_data(cl_sh_pcim_wdata_FIRESIM),
+   .io_pcim_w_bits_last(cl_sh_pcim_wlast_FIRESIM),
+   .io_pcim_w_bits_id(),
+   .io_pcim_w_bits_strb(cl_sh_pcim_wstrb_FIRESIM),
+   .io_pcim_w_bits_user(),
+   .io_pcim_b_ready(cl_sh_pcim_bready_FIRESIM),
+   .io_pcim_b_valid(sh_cl_pcim_bvalid_FIRESIM),
+   .io_pcim_b_bits_resp(sh_cl_pcim_bresp_FIRESIM),
+   .io_pcim_b_bits_id(sh_cl_pcim_bid_FIRESIM),
+   .io_pcim_b_bits_user(1'h0),
+   .io_pcim_ar_ready(sh_cl_pcim_arready_FIRESIM),
+   .io_pcim_ar_valid(cl_sh_pcim_arvalid_FIRESIM),
+   .io_pcim_ar_bits_addr(cl_sh_pcim_araddr_FIRESIM),
+   .io_pcim_ar_bits_len(cl_sh_pcim_arlen_FIRESIM),
+   .io_pcim_ar_bits_size(cl_sh_pcim_arsize_FIRESIM),
+   .io_pcim_ar_bits_burst(),
+   .io_pcim_ar_bits_lock(),
+   .io_pcim_ar_bits_cache(),
+   .io_pcim_ar_bits_prot(),
+   .io_pcim_ar_bits_qos(),
+   .io_pcim_ar_bits_region(),
+   .io_pcim_ar_bits_id(cl_sh_pcim_arid_FIRESIM),
+   .io_pcim_ar_bits_user(),
+   .io_pcim_r_ready(cl_sh_pcim_rready_FIRESIM),
+   .io_pcim_r_valid(sh_cl_pcim_rvalid_FIRESIM),
+   .io_pcim_r_bits_resp(sh_cl_pcim_rresp_FIRESIM),
+   .io_pcim_r_bits_data(sh_cl_pcim_rdata_FIRESIM),
+   .io_pcim_r_bits_last(sh_cl_pcim_rlast_FIRESIM),
+   .io_pcim_r_bits_id(sh_cl_pcim_rid_FIRESIM),
+   .io_pcim_r_bits_user(1'h0),
 
    .io_slave_0_aw_ready(fsimtop_s_0_axi_awready),
    .io_slave_0_aw_valid(fsimtop_s_0_axi_awvalid),
