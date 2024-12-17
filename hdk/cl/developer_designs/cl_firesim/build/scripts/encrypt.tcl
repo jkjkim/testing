@@ -63,14 +63,23 @@ set vivado_version [string range [version -short] 0 5]
 puts "AWS FPGA: VIVADO_TOOL_VERSION $TOOL_VERSION"
 puts "vivado_version $vivado_version"
 
+<<<<<<< HEAD:hdk/cl/developer_designs/cl_firesim/build/scripts/encrypt.tcl
 # FireSim: disable encryption of CL RTL since it obfuscates names in
 # checkpoints and timing reports making it difficult to analyze build
 # difficulties without rerunning a build with encryption disabled.
 # The final checkpoint is still encrypted before delivery to AWS.
 # See https://forums.aws.amazon.com/thread.jspa?threadID=346135&tstart=0 
+=======
+# encrypt .v/.sv/.vh/inc as verilog files
+encrypt -k $HDK_SHELL_DIR/build/scripts/vivado_keyfile_2024_1.txt -lang verilog  [glob -nocomplain -- $TARGET_DIR/*.{v,sv}] [glob -nocomplain -- $TARGET_DIR/*.vh] [glob -nocomplain -- $TARGET_DIR/*.inc]
+>>>>>>> f23ec98 (Updated encryption key and encrypted files to 2024.1):hdk/cl/examples/cl_uram_example/build/scripts/encrypt.tcl
 
 # encrypt .v/.sv/.vh/inc as verilog files
 #
 #encrypt -k $HDK_SHELL_DIR/build/scripts/vivado_keyfile_2017_4.txt -lang verilog  [glob -nocomplain -- $TARGET_DIR/*.{v,sv}] [glob -nocomplain -- $TARGET_DIR/*.vh] [glob -nocomplain -- $TARGET_DIR/*.inc]
 # encrypt *vhdl files
+<<<<<<< HEAD:hdk/cl/developer_designs/cl_firesim/build/scripts/encrypt.tcl
 #encrypt -k $HDK_SHELL_DIR/build/scripts/vivado_vhdl_keyfile_2017_4.txt -lang vhdl -quiet [ glob -nocomplain -- $TARGET_DIR/*.vhd? ]
+=======
+encrypt -k $HDK_SHELL_DIR/build/scripts/vivado_vhdl_keyfile_2024_1.txt -lang vhdl -quiet [ glob -nocomplain -- $TARGET_DIR/*.vhd? ]
+>>>>>>> f23ec98 (Updated encryption key and encrypted files to 2024.1):hdk/cl/examples/cl_uram_example/build/scripts/encrypt.tcl
